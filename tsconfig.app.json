@@ -1,0 +1,16 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "src/hooks/useFlicker.ts"],
+  "exclude": ["src/**/__tests__/*"],
+  "files": [
+    // ... other files
+    "src/hooks/useFlicker.ts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
