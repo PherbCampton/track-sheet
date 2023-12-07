@@ -43,7 +43,7 @@ const isCompleted = computed({
       <CheckBox :id="id" v-model="isCompleted" />
       <p
         v-if="!editing"
-        :class="`text-sm font-[300] py-3 min-[400px]:text-[16px] ${
+        :class="`text-sm font-[300] py-3 min-[400px]:text-[16px] break-all ${
           completed ? 'line-through' : ''
         }`"
       >
