@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { v4 as uuid } from 'uuid'
 import { Icon } from '@iconify/vue'
-import { reset } from '@formkit/vue'
 import TaskCard from './TaskCard.vue'
-import { onMounted, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { onMounted, computed, ref } from 'vue'
 import ProgressTrack from './ProgressTrack.vue'
 
 type Task = {
@@ -26,6 +25,10 @@ const sortedTasks = computed(() => {
   })
 })
 
+const input = ref()
+const currentTask = ref('')
+const validation = ref(true)
+
 const toggleComplete = (index: number) => {
   sortedTasks.value[index].completed = !sortedTasks.value[index].completed
 }
@@ -42,19 +45,27 @@ const handleDelete = (taskID: string) => {
   tasks.value = sortedTasks.value?.filter((task) => task.id !== taskID)
 }
 
-const submitHandler = async (data: any) => {
-  const newID = uuid()
-  data.task = data.task.trim()
-  data.task = data.task.charAt(0).toUpperCase() + data.task.slice(1)
-  const newTask: Task = {
-    id: newID,
-    isEditing: false,
-    completed: false,
-    created_at: Date.now(),
-    ...data
+const submitHandler = () => {
+  if (input.value.textContent.trim().length > 3) {
+    currentTask.value = input.value.textContent
+    const newID = uuid()
+    let task = currentTask.value.trim()
+    task = task.charAt(0).toUpperCase() + task.slice(1)
+
+    const newTask: Task = {
+      id: newID,
+      task: task,
+      isEditing: false,
+      completed: false,
+      created_at: Date.now()
+    }
+
+    input.value.innerHTML = ''
+    tasks.value.push(newTask)
+    validation.value = true
+  } else {
+    validation.value = false
   }
-  tasks.value.push(newTask)
-  reset('task')
 }
 
 onMounted(() => {
@@ -70,51 +81,41 @@ onMounted(() => {
       :task="tasks.length"
       :completed="tasks.filter((task) => task.completed).length"
     />
-    <div class="bg-[#0d0d0d] mx-5 sticky top-14 z-10 mt-8">
-      <FormKit
-        type="form"
-        id="new-task"
-        :actions="false"
-        use-local-storage
-        @submit="submitHandler"
-        :incomplete-message="false"
-      >
-        <div class="mt-5 flex gap-5 justify-between">
-          <FormKit
-            id="task"
-            type="text"
-            name="task"
-            label="Task"
-            v-auto-animate
-            :autoFocus="false"
-            autocomplete="off"
-            outer-class="w-full"
-            validation-visibility="submit"
-            help="Yes you can achieve it!"
-            validation="required:trim|length:3"
-            input-class="focus:border-0 focus:outline-0 font-[300] focus:ring-0 text-[#d2c2a7ff]"
-            inner-class="rounded-lg focus-within:ring-[#d2c2a7ff] ring-transparent bg-[#1e1e1e]"
-          />
+    <div class="bg-[#0d0d0d] mx-5 sticky top-14 z-10 mt-8" v-auto-animate>
+      <div class="mt-5 flex gap-5 justify-between items-center">
+        <div class="flex flex-col w-full">
+          <span
+            ref="input"
+            contenteditable
+            :autoFocus="true"
+            @keydown.enter.prevent="submitHandler"
+            class="w-full rounded-lg text-sm font-[300] p-3 bg-[#1e1e1e] opacity-90 outline-none min-[400px]:text-[16px] max-h-[84px] overflow-y-auto"
+          >
+          </span>
+        </div>
 
-          <div class="flex gap-5">
-            <button type="submit" class="button">
-              <Icon icon="line-md:plus" />
+        <div class="flex gap-5">
+          <button type="button" @click.prevent="submitHandler" class="button">
+            <Icon icon="line-md:plus" />
+          </button>
+          <div class="tooltip">
+            <button
+              type="button"
+              class="button"
+              aria-label="Clear all"
+              @dblclick="tasks = []"
+              :disabled="!tasks.length"
+            >
+              <Icon icon="codicon:clear-all" />
+              <span class="tooltiptext">Double click to clear tasks</span>
             </button>
-            <div class="tooltip">
-              <button
-                type="button"
-                class="button"
-                aria-label="Clear all"
-                @dblclick="tasks = []"
-                :disabled="!tasks.length"
-              >
-                <Icon icon="codicon:clear-all" />
-                <span class="tooltiptext">Double click to clear tasks</span>
-              </button>
-            </div>
           </div>
         </div>
-      </FormKit>
+      </div>
+      <div v-if="!validation" class="text-[10px] font-thin text-red-500 flex items-center gap-1">
+        <Icon icon="maki:caution" />
+        <span class="mt-1">Input must be than 3 characters</span>
+      </div>
     </div>
 
     <div v-if="tasks.length > 0" v-auto-animate class="mt-5">
@@ -144,7 +145,7 @@ onMounted(() => {
 
 <style scoped>
 .button {
-  @apply flex items-center justify-center bg-[#ff5631] opacity-70  rounded-full h-10 w-10 text-xl font-bold text-black mt-[24px] hover:opacity-100 disabled:cursor-not-allowed disabled:hover:opacity-70;
+  @apply flex items-center justify-center bg-[#ff5631] opacity-70  rounded-full h-10 w-10 text-xl font-bold text-black hover:opacity-100 disabled:cursor-not-allowed disabled:hover:opacity-70;
 }
 .tooltip {
   position: relative;
@@ -164,8 +165,8 @@ onMounted(() => {
   border-radius: 6px;
   position: absolute;
   text-align: center;
-  margin-left: -110px;
   visibility: hidden;
+  margin-left: -110px;
   background-color: #555;
   transition: opacity 0.3s;
 }

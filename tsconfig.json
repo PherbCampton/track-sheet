@@ -1,5 +1,4 @@
 {
-  "files": ["./formkit.config.ts"],
   "allowjs": true,
   "references": [
     {

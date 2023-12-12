@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 import CheckBox from './CheckBox.vue'
-import { useFocus } from '@vueuse/core'
 import { computed, ref, type PropType } from 'vue'
 
 const props = defineProps({
@@ -12,13 +11,11 @@ const props = defineProps({
   completed: Boolean as PropType<boolean>
 })
 
+const text = ref()
 const editedTask = ref(props.task)
 
 const defaultIcon =
-  'hover:text-[#ff5631] opacity-10 cursor-pointer group-hover:opacity-100 transition ease-in-out delay-150'
-
-const text = ref()
-useFocus(text, { initialValue: true })
+  'hover:text-[#ff5631] opacity-70 cursor-pointer group-hover:opacity-100 transition ease-in-out delay-150'
 
 const emit = defineEmits(['update:modelValue', 'delete', 'edit', 'save', 'toggleComplete'])
 
@@ -31,6 +28,22 @@ const isCompleted = computed({
     emit('update:modelValue', props.index)
   }
 })
+
+const handleSave = () => {
+  emit('save', editedTask, props.index)
+  editedTask.value = text.value.textContent
+}
+
+const handleCancle = () => {
+  text.value.innerText = props.task
+  emit('save', editedTask, props.index)
+}
+
+const handleEdit = () => {
+  text.value.focus()
+  emit('edit', props.index)
+  editedTask.value = props.task
+}
 </script>
 
 <template>
@@ -41,22 +54,17 @@ const isCompleted = computed({
   >
     <div v-auto-animate class="flex gap-3 w-full items-center">
       <CheckBox :id="id" v-model="isCompleted" />
-      <p
-        v-if="!editing"
-        :class="`text-sm font-[300] py-3 min-[400px]:text-[16px] break-all ${
-          completed ? 'line-through' : ''
-        }`"
+      <span
+        ref="text"
+        :contenteditable="editing"
+        @keydown.esc="handleCancle"
+        @keydown.enter.prevent="handleSave"
+        :class="`text-justify text-sm font-[300] py-3 min-[400px]:text-[16px] break-words w-full outline-none mt-1 ${
+          completed && !editing ? 'line-through' : ''
+        } ${editing ? 'blink' : ''} `"
       >
         {{ task }}
-      </p>
-      <input
-        v-else
-        ref="text"
-        v-model="editedTask"
-        @keyup.esc="$emit('edit', index)"
-        @keyup.enter="$emit('save', editedTask, index)"
-        class="w-full text-sm font-[300] bg-transparent opacity-70 py-3 outline-none min-[400px]:text-[16px]"
-      />
+      </span>
     </div>
 
     <div
@@ -65,22 +73,35 @@ const isCompleted = computed({
       <Icon
         icon="line-md:square-to-confirm-square-twotone-transition"
         v-if="editing"
-        @click="$emit('save', editedTask, index)"
+        @click="handleSave"
         class="text-[#1D9F63] cursor-pointer"
       />
-      <Icon
-        icon="line-md:edit"
-        v-else
-        :class="defaultIcon"
-        @click="$emit('edit', index), (editedTask = task)"
-      />
+      <Icon icon="line-md:edit" v-else :class="defaultIcon" @click="handleEdit" />
       <Icon
         icon="line-md:cancel"
         v-if="editing"
-        @click="$emit('edit', index)"
+        @click="handleCancle"
         class="text-[#ff5631] cursor-pointer"
       />
       <Icon v-else icon="line-md:remove" @click="$emit('delete', id)" :class="defaultIcon" />
     </div>
   </div>
 </template>
+
+<style scoped>
+.blink {
+  animation: animate 2s linear infinite;
+}
+
+@keyframes animate {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+</style>
