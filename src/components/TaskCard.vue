@@ -29,9 +29,10 @@ const isCompleted = computed({
   }
 })
 
-const handleSave = () => {
-  emit('save', editedTask, props.index)
-  editedTask.value = text.value.textContent
+const handleEdit = () => {
+  text.value.focus()
+  emit('edit', props.index)
+  editedTask.value = props.task
 }
 
 const handleCancle = () => {
@@ -39,10 +40,9 @@ const handleCancle = () => {
   emit('save', editedTask, props.index)
 }
 
-const handleEdit = () => {
-  text.value.focus()
-  emit('edit', props.index)
-  editedTask.value = props.task
+const handleSave = () => {
+  emit('save', editedTask, props.index)
+  editedTask.value = text.value.textContent
 }
 </script>
 

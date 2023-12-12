@@ -81,8 +81,9 @@ onMounted(() => {
       :task="tasks.length"
       :completed="tasks.filter((task) => task.completed).length"
     />
-    <div class="bg-[#0d0d0d] mx-5 sticky top-14 z-10 mt-8" v-auto-animate>
-      <div class="mt-5 flex gap-5 justify-between items-center">
+    <div class="bg-[#0d0d0d] mx-5 sticky top-14 z-10 mt-8 pb-3" v-auto-animate>
+      <Label class="mt-5 text-sm">Enter a task</Label>
+      <div class="flex gap-5 justify-between items-center">
         <div class="flex flex-col w-full">
           <span
             ref="input"
@@ -114,7 +115,7 @@ onMounted(() => {
       </div>
       <div v-if="!validation" class="text-[10px] font-thin text-red-500 flex items-center gap-1">
         <Icon icon="maki:caution" />
-        <span class="mt-1">Input must be than 3 characters</span>
+        <span class="mt-1">A task must contain at least 4 characters</span>
       </div>
     </div>
 
