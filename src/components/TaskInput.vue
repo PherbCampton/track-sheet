@@ -82,10 +82,11 @@ onMounted(() => {
       :completed="tasks.filter((task) => task.completed).length"
     />
     <div class="bg-[#0d0d0d] mx-5 sticky top-14 z-10 mt-8 pb-3" v-auto-animate>
-      <Label class="mt-5 text-sm">Enter a task</Label>
+      <Label for="input" class="mt-5 text-sm">Enter a task</Label>
       <div class="flex gap-5 justify-between items-center">
         <div class="flex flex-col w-full">
           <span
+            id="input"
             ref="input"
             contenteditable
             :autoFocus="true"
